@@ -54,7 +54,7 @@ app.layout = html.Div([
             options = [{'label':i, 'value':i} for i in foodnames1],
             value = 'Queijos delicados',
         ),
-        html.H5('Intensidade'),
+        html.H4('Intensidade'),
         dcc.Slider(
             id = 'weight1',
             min = 0.1,
@@ -71,7 +71,7 @@ app.layout = html.Div([
             id = 'food2',
             value = 'Nenhum',
         ),
-        html.H5('Intensidade'),
+        html.H4('Intensidade'),
         dcc.Slider(
             id = 'weight2',
             min = 0.1,
@@ -85,11 +85,12 @@ app.layout = html.Div([
 
         html.H6('Harmonização dos elementos individuais baseadas no livro O guia essencial do vinho: Wine Folly, 1. ed. 2016.'),
 
-    ], style = {'width':'28%', 'display':'inline-block'} ),
+    ], #style = {'width':'28%', 'display':'inline-block'} 
+    ),
 
     html.Div(
-        dcc.Graph(id = 'graph'),
-        style = {'width':'70%', 'float':'right'}
+        dcc.Graph(id = 'graph')#,
+        #style = {'width':'70%', 'float':'right'}
     )
 ])
 
@@ -108,9 +109,11 @@ def update_output(selected_food1, w1, selected_food2, w2):
         ex2.insert(0, 'Exemplos: ')
         ex2 = ''.join(ex2)
 
-    fig =  go.Figure([go.Bar(x=list(val), y=list(d.index), orientation='h', marker_color=colorfun(list(val)))])
+    fig =  go.Figure([go.Bar(x=list(d.index), y=list(val), marker_color=colorfun(list(val)))])
+    fig.update_yaxes(nticks=0, tickvals=[0.0,0.5,1.0], ticktext=['C','B','A'])
+    #fig =  go.Figure([go.Bar(x=list(val), y=list(d.index), orientation='h', marker_color=colorfun(list(val)))])
+    #fig.update_xaxes(title='Harmonização', nticks=0, tickvals=[0.0,0.5,1.0], ticktext=['Não harmoniza','Boa','Excelente'])
     fig.update_layout(plot_bgcolor='rgb(255,255,255)')
-    fig.update_xaxes(title='Harmonização', nticks=0, tickvals=[0.0,0.5,1.0], ticktext=['Não harmoniza','Boa','Excelente'])
 
 
     ex1 = list(ex.loc[selected_food1])
