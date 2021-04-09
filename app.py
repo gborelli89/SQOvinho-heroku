@@ -34,7 +34,10 @@ def colorfun(v, g=0.75, maincol='rgba(128,128,128,0.5)', chosencol='rgba(0,186,1
 
 # Inicia aplicativo
 
-app = dash.Dash(__name__)
+app = dash.Dash(__name__,
+                meta_tags=[{'name': 'viewport',
+                            'content': 'width=device-width, initial-scale=1.0, maximum-scale=1.4, minimum-scale=0.8,'}]
+                )
 
 server = app.server
 
