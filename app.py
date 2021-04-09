@@ -43,7 +43,7 @@ server = app.server
 
 app.layout = html.Div([
     html.Div(
-        html.Img(src='https://raw.githubusercontent.com/gborelli89/SQOvinho-heroku/main/seraqorna.png', style = {'width':'60%'}),
+        html.Img(src='https://raw.githubusercontent.com/gborelli89/SQOvinho-heroku/main/seraqorna.png', style = {'width':'90%'}),
         style={'textAlign':'center'} 
     ),
 
@@ -81,17 +81,21 @@ app.layout = html.Div([
         ),
         html.P(id = 'ex-food2'),
 
-        html.Br(),
+    
 
-        html.H6('Harmonização dos elementos individuais baseadas no livro O guia essencial do vinho: Wine Folly, 1. ed. 2016.'),
+    ], style = {'width':'100%'}#, 'display':'inline-block'} 
+    ),
 
-    ], #style = {'width':'28%', 'display':'inline-block'} 
+    html.Div([
+        dcc.Graph(id = 'graph'),
+    
+    ], style = {'width':'100%'}#, 'float':'right'}
     ),
 
     html.Div(
-        dcc.Graph(id = 'graph')#,
-        #style = {'width':'70%', 'float':'right'}
+        html.H6('Harmonização dos elementos individuais baseadas no livro O guia essencial do vinho: Wine Folly, 1. ed. 2016.')
     )
+    
 ])
 
 @app.callback(
@@ -109,11 +113,14 @@ def update_output(selected_food1, w1, selected_food2, w2):
         ex2.insert(0, 'Exemplos: ')
         ex2 = ''.join(ex2)
 
-    fig =  go.Figure([go.Bar(x=list(d.index), y=list(val), marker_color=colorfun(list(val)))])
-    fig.update_yaxes(nticks=0, tickvals=[0.0,0.5,1.0], ticktext=['C','B','A'])
-    #fig =  go.Figure([go.Bar(x=list(val), y=list(d.index), orientation='h', marker_color=colorfun(list(val)))])
-    #fig.update_xaxes(title='Harmonização', nticks=0, tickvals=[0.0,0.5,1.0], ticktext=['Não harmoniza','Boa','Excelente'])
-    fig.update_layout(plot_bgcolor='rgb(255,255,255)')
+    #fig =  go.Figure([go.Bar(x=list(d.index), y=list(val), marker_color=colorfun(list(val)))])
+    #fig.update_yaxes(title='Harmonização', nticks=0, tickvals=[0.0,0.5,1.0], ticktext=['C','B','A'])
+    ylabels = ['E','BL','BE','BA','R','TL','TMC','TE','S']
+    fig =  go.Figure([go.Bar(x=list(val), y=ylabels, orientation='h', marker_color=colorfun(list(val)), hoverinfo='text',
+                        hovertext=['Espumante','Branco leve','Branco encorpado','Branco aromático','Rosè',
+                        'Tinto leve','Tinto de médio corpo','Tinto encorpado','Sobremesa'])])
+    fig.update_xaxes(title='Harmonização',nticks=0, tickvals=[0.0,0.5,1.0], ticktext=['Não harmoniza','Boa','Excelente'])
+    fig.update_layout(plot_bgcolor='rgb(255,255,255)', margin={'l':10, 'r':10})
 
 
     ex1 = list(ex.loc[selected_food1])
