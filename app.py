@@ -8,9 +8,9 @@ from dash.dependencies import Input, Output
 import plotly.graph_objects as go
 
 # Carregando dados
-d = pd.read_csv('harm_vinhos.csv', delimiter=';')
+d = pd.read_csv('https://raw.githubusercontent.com/gborelli89/SQOvinho-heroku/main/harm_vinhos.csv', delimiter=';')
 d = d.set_index('Tipo')
-ex = pd.read_csv('ex_alimentos.csv', delimiter=';')
+ex = pd.read_csv('https://raw.githubusercontent.com/gborelli89/SQOvinho-heroku/main/ex_alimentos.csv', delimiter=';')
 ex = ex.set_index('alimento')
 
 # Nomes dos alimentos
@@ -36,11 +36,11 @@ def colorfun(v, g=0.75, maincol='rgba(128,128,128,0.5)', chosencol='rgba(0,186,1
 
 app = dash.Dash(__name__)
 
-#server = app.server
+server = app.server
 
 app.layout = html.Div([
     html.Div(
-        html.Img(src='https://raw.githubusercontent.com/gborelli89/heroku-seraqueorna-vinho/master/data/seraqueorna.png', style = {'width':'60%'}),
+        html.Img(src='https://raw.githubusercontent.com/gborelli89/SQOvinho-heroku/main/seraqorna.png', style = {'width':'60%'}),
         style={'textAlign':'center'} 
     ),
 
@@ -119,4 +119,4 @@ def update_output(selected_food1, w1, selected_food2, w2):
     return [fig, ex1, opt2, ex2]
 
 if __name__ == '__main__':
-    app.run_server(host='0.0.0.0', port=8080, debug=True)
+    app.run_server(debug=True)
