@@ -87,7 +87,7 @@ app.layout = html.Div([
     ),
 
     html.Div([
-        dcc.Graph(id = 'graph'),
+        dcc.Graph(id = 'graph', config={'displayModeBar':False}),
     
     ], style = {'width':'100%'}#, 'float':'right'}
     ),
