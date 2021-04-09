@@ -1,5 +1,6 @@
 import os
 
+import numpy as np
 import pandas as pd
 import dash
 import dash_core_components as dcc
@@ -11,20 +12,35 @@ import plotly.graph_objects as go
 d = pd.read_csv('https://raw.githubusercontent.com/gborelli89/SQOvinho-heroku/main/harm_vinhos.csv', delimiter=';')
 d = d.set_index('Tipo')
 ex = pd.read_csv('https://raw.githubusercontent.com/gborelli89/SQOvinho-heroku/main/ex_alimentos.csv', delimiter=';')
-ex = ex.set_index('alimento')
+ex = ex.set_index('Alimento')
+wi = pd.read_csv('https://raw.githubusercontent.com/gborelli89/SQOvinho-heroku/main/intensidade_vinhos.csv', delimiter=';')
 
 # Nomes dos alimentos
 foodnames1 = list(d.columns)
 foodnames2 = foodnames1.copy()
 foodnames2.insert(0, 'Nenhum')
 
-def harmfun(a1, x1, a2, x2):
-    return (a1*x1 + a2*x2)/(a1+a2)
+def findclose(s, value):
+    maxval = s.Intensidade[s.Intensidade >= value].min()
+    minval = s.Intensidade[s.Intensidade <= value].max()
 
-def colorfun(v, g=0.75, maincol='rgba(128,128,128,0.5)', chosencol='rgba(0,186,182,0.6)'):
+    a = s.index[s.Intensidade == minval]
+    b = s.index[s.Intensidade == maxval]
+
+    return a.tolist() + b.tolist()
+
+
+def findharm(df,wine_int):
+    id = [x[0] for x in enumerate(df) if x[1] > 0]
+    r = wine_int.iloc[id]
+    range_values = np.linspace(min(r.Intensidade), max(r.Intensidade), 5).tolist()
+    res = [findclose(r,i) for i in range_values]
+    return res
+
+
+def colorfun(v, id, maincol='rgba(128,128,128,0.5)', chosencol='rgba(0,186,182,0.6)'):
     
     rescol = [maincol for _ in v]
-    id = [x[0] for x in enumerate(v) if x[1] > g]
     
     for i in id:
         rescol[i] = chosencol
@@ -48,40 +64,28 @@ app.layout = html.Div([
     ),
 
     html.Div([
-        html.H3('Elemento principal'),
+        html.H3('Classe principal'),
         dcc.Dropdown(
             id = 'food1',
             options = [{'label':i, 'value':i} for i in foodnames1],
             value = 'Queijos delicados',
         ),
-        html.H4('Intensidade'),
+        html.H4('Intensidade dentro da classe selecionada'),
         dcc.Slider(
             id = 'weight1',
-            min = 0.1,
-            max = 1.0,
-            step = 0.1,
-            value = 1.0
+            min = 0,
+            max = 4,
+            step = None,
+            marks={
+                0:'1',
+                1:'2',
+                2:'3',
+                3:'4',
+                4:'5'
+            },
+            value = 0
         ),
         html.P(id = 'ex-food1'),
-
-        html.Br(),
-
-        html.H3('Elemento secundário'),
-        dcc.Dropdown(
-            id = 'food2',
-            value = 'Nenhum',
-        ),
-        html.H4('Intensidade'),
-        dcc.Slider(
-            id = 'weight2',
-            min = 0.1,
-            max = 1.0,
-            step = 0.1,
-            value = 0.7
-        ),
-        html.P(id = 'ex-food2'),
-
-    
 
     ], style = {'width':'100%'}#, 'display':'inline-block'} 
     ),
@@ -93,33 +97,36 @@ app.layout = html.Div([
     ),
 
     html.Div(
-        html.H6('Harmonização dos elementos individuais baseadas no livro O guia essencial do vinho: Wine Folly, 1. ed. 2016.')
+        html.H6('Harmonização das classes baseadas no livro O guia essencial do vinho: Wine Folly, 1. ed. 2016.')
     )
     
 ])
 
 @app.callback(
-    [Output('graph','figure'), Output('ex-food1','children'), Output('food2','options'), Output('ex-food2','children')],
-    [Input('food1','value'), Input('weight1','value'), Input('food2','value'), Input('weight2','value')]
+    [Output('graph','figure'), Output('ex-food1','children')],
+    [Input('food1','value'), Input('weight1','value')]
 )
-def update_output(selected_food1, w1, selected_food2, w2):
+def update_output(selected_food1, w1):
     
-    if selected_food2 == 'Nenhum':
-        val = harmfun(w1, d[selected_food1], 0, d[selected_food1])
-        ex2 = ''
-    else:
-        val = harmfun(w1, d[selected_food1], w2, d[selected_food2])
-        ex2 = list(ex.loc[selected_food2])
-        ex2.insert(0, 'Exemplos: ')
-        ex2 = ''.join(ex2)
+    val = d[selected_food1]
+    harm = findharm(val, wi)
+    # if selected_food2 == 'Nenhum':
+    #     val = harmfun(w1, d[selected_food1], 0, d[selected_food1])
+    #     ex2 = ''
+    # else:
+    #     val = harmfun(w1, d[selected_food1], w2, d[selected_food2])
+    #     ex2 = list(ex.loc[selected_food2])
+    #     ex2.insert(0, 'Exemplos: ')
+    #     ex2 = ''.join(ex2)
 
     #fig =  go.Figure([go.Bar(x=list(d.index), y=list(val), marker_color=colorfun(list(val)))])
     #fig.update_yaxes(title='Harmonização', nticks=0, tickvals=[0.0,0.5,1.0], ticktext=['C','B','A'])
     ylabels = ['E','BL','BE','BA','R','TL','TMC','TE','S']
-    fig =  go.Figure([go.Bar(x=list(val), y=ylabels, orientation='h', marker_color=colorfun(list(val)), hoverinfo='text',
+    fig =  go.Figure([go.Bar(x=list(val), y=ylabels, orientation='h', marker_color=colorfun(val,harm[w1]), hoverinfo='text',
                         hovertext=['Espumante','Branco leve','Branco encorpado','Branco aromático','Rosè',
                         'Tinto leve','Tinto de médio corpo','Tinto encorpado','Sobremesa'])])
-    fig.update_xaxes(title='Harmonização',nticks=0, tickvals=[0.0,0.5,1.0], ticktext=['Não harmoniza','Boa','Excelente'])
+    fig.update_xaxes(title='Harmonização',nticks=0, tickvals=[0.0,0.5,1.0], ticktext=['Não harmoniza','Boa','Excelente'], fixedrange=True)
+    fig.update_yaxes(fixedrange=True)
     fig.update_layout(plot_bgcolor='rgb(255,255,255)', margin={'l':10, 'r':10})
 
 
@@ -127,9 +134,9 @@ def update_output(selected_food1, w1, selected_food2, w2):
     ex1.insert(0, 'Exemplos: ')
     ex1 = ''.join(ex1)
 
-    opt2 = [{'label':x, 'value':x} for x in foodnames2 if x != selected_food1]
+    #opt2 = [{'label':x, 'value':x} for x in foodnames2 if x != selected_food1]
 
-    return [fig, ex1, opt2, ex2]
+    return [fig, ex1]
 
 if __name__ == '__main__':
     app.run_server(debug=True)
