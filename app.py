@@ -69,6 +69,8 @@ app.layout = html.Div([
             id = 'food1',
             options = [{'label':i, 'value':i} for i in foodnames1],
             value = 'Queijos delicados',
+            clearable=False,
+            searchable=False
         ),
         html.H4('Intensidade dentro da classe selecionada'),
         dcc.Slider(
@@ -122,9 +124,18 @@ def update_output(selected_food1, w1):
     #fig =  go.Figure([go.Bar(x=list(d.index), y=list(val), marker_color=colorfun(list(val)))])
     #fig.update_yaxes(title='Harmonização', nticks=0, tickvals=[0.0,0.5,1.0], ticktext=['C','B','A'])
     ylabels = ['E','BL','BE','BA','R','TL','TMC','TE','S']
+    wine_labels = ['<b>Espumante</b><br>Champagne, Cava, Prosecco<br>',
+                    '<b>Branco leve</b><br>Sauvignon Blanc, Pinot Gris<br>Albariño, Muscadet, Vermentino',
+                    '<b>Branco encorpado</b><br>Chardonnay, Viognier, Sémillon',
+                    '<b>Branco aromático</b><br>Riesling, Chenin Blanc<br>Torrontés, Gewürztraminer',
+                    '<b>Rosè</b>',
+                    '<b>Tinto leve</b><br>Pinot Noir, Gamay',
+                    '<b>Tinto de médio corpo</b><br>Merlot, Carménère, Cabernet Franc<br>Grenache, Barbera, Montepulciano, Negroamaro<br>Sangiovese, Primitivo (Zinfandel), Valpolicella',
+                    '<b>Tinto encorpado</b><br>Cabernet Sauvignon, Malbec, Bordeaux<br>Nebbiolo, Syrah, Tempranillo, Pinotage<br>Nero D&#39;Avola, Touriga Nacional',
+                    '<b>Sobremesa</b><br>Porto, Madeira, Marsala<br>Vin Santo, Xerez']
     fig =  go.Figure([go.Bar(x=list(val), y=ylabels, orientation='h', marker_color=colorfun(val,harm[w1]), hoverinfo='text',
-                        hovertext=['Espumante','Branco leve','Branco encorpado','Branco aromático','Rosè',
-                        'Tinto leve','Tinto de médio corpo','Tinto encorpado','Sobremesa'])])
+                        hovertext=wine_labels)
+                    ])
     fig.update_xaxes(title='Harmonização',nticks=0, tickvals=[0.0,0.5,1.0], ticktext=['Não harmoniza','Boa','Excelente'], fixedrange=True)
     fig.update_yaxes(fixedrange=True)
     fig.update_layout(plot_bgcolor='rgb(255,255,255)', margin={'l':10, 'r':10})
