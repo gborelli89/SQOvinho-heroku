@@ -20,6 +20,7 @@ foodnames1 = list(d.columns)
 foodnames2 = foodnames1.copy()
 foodnames2.insert(0, 'Nenhum')
 
+# Encontrando valores superior e inferior mais próximos
 def findclose(s, value):
     maxval = s.Intensidade[s.Intensidade >= value].min()
     minval = s.Intensidade[s.Intensidade <= value].max()
@@ -29,7 +30,7 @@ def findclose(s, value):
 
     return a.tolist() + b.tolist()
 
-
+# Encontrando sugestão de harmonização
 def findharm(df,wine_int):
     id = [x[0] for x in enumerate(df) if x[1] > 0]
     r = wine_int.iloc[id]
@@ -37,19 +38,20 @@ def findharm(df,wine_int):
     res = [findclose(r,i) for i in range_values]
     return res
 
-
-def colorfun(v, id, maincol='rgba(128,128,128,0.5)', chosencol='rgba(0,186,182,0.6)'):
+# Função genérica que pode ser utilizada para definir cores e labels
+def idfun(v, id, mainstring, chosenstring):
     
-    rescol = [maincol for _ in v]
+    restring = [mainstring for _ in v]
     
     for i in id:
-        rescol[i] = chosencol
+        restring[i] = chosenstring
     
-    return rescol
+    return restring
+
 
 
 # Inicia aplicativo
-
+# UI
 app = dash.Dash(__name__,
                 meta_tags=[{'name': 'viewport',
                             'content': 'width=device-width, initial-scale=1.0, maximum-scale=1.4, minimum-scale=0.8,'}]
@@ -104,6 +106,7 @@ app.layout = html.Div([
     
 ])
 
+# Callback
 @app.callback(
     [Output('graph','figure'), Output('ex-food1','children')],
     [Input('food1','value'), Input('weight1','value')]
@@ -121,8 +124,6 @@ def update_output(selected_food1, w1):
     #     ex2.insert(0, 'Exemplos: ')
     #     ex2 = ''.join(ex2)
 
-    #fig =  go.Figure([go.Bar(x=list(d.index), y=list(val), marker_color=colorfun(list(val)))])
-    #fig.update_yaxes(title='Harmonização', nticks=0, tickvals=[0.0,0.5,1.0], ticktext=['C','B','A'])
     ylabels = ['E','BL','BE','BA','R','TL','TMC','TE','S']
     wine_labels = ['<b>Espumante</b><br>Champagne, Cava, Prosecco<br>',
                     '<b>Branco leve</b><br>Sauvignon Blanc, Pinot Gris<br>Albariño, Muscadet, Vermentino',
@@ -133,12 +134,32 @@ def update_output(selected_food1, w1):
                     '<b>Tinto de médio corpo</b><br>Merlot, Carménère, Cabernet Franc<br>Grenache, Barbera, Montepulciano, Negroamaro<br>Sangiovese, Primitivo (Zinfandel), Valpolicella',
                     '<b>Tinto encorpado</b><br>Cabernet Sauvignon, Malbec, Bordeaux<br>Nebbiolo, Syrah, Tempranillo, Pinotage<br>Nero D&#39;Avola, Touriga Nacional',
                     '<b>Sobremesa</b><br>Porto, Madeira, Marsala<br>Vin Santo, Xerez']
-    fig =  go.Figure([go.Bar(x=list(val), y=ylabels, orientation='h', marker_color=colorfun(val,harm[w1]), hoverinfo='text',
-                        hovertext=wine_labels)
-                    ])
+    
+    colors = {'Sugestões': 'rgba(0,186,182,0.6)',
+                'Outras opções': 'rgba(128,128,128,0.5)'}
+    legendnames = idfun(val, harm[w1], mainstring='Outras opções', chosenstring='Sugestões')
+
+    wdf = pd.DataFrame({'x': list(val),
+                        'y': [0,1,2,3,4,5,6,7,8],
+                        'label': legendnames,
+                        'wines': wine_labels})
+
+    fig =  go.Figure()
+
+    for label, label_df in wdf.groupby('label'):    
+        fig.add_trace(go.Bar(x=label_df.x, y=label_df.y, name=label, marker={'color': colors[label]}, orientation='h',
+                            hoverinfo='text', hovertext=label_df.wines))
+
     fig.update_xaxes(title='Harmonização',nticks=0, tickvals=[0.0,0.5,1.0], ticktext=['Não harmoniza','Boa','Excelente'], fixedrange=True)
-    fig.update_yaxes(fixedrange=True)
-    fig.update_layout(plot_bgcolor='rgb(255,255,255)', margin={'l':10, 'r':10})
+    fig.update_yaxes(tickvals=[0,1,2,3,4,5,6,7,8], ticktext=ylabels, fixedrange=True)
+    fig.update_layout(plot_bgcolor='rgb(255,255,255)', margin={'l':10, 'r':10}, 
+                    legend=dict(
+                        orientation='h',
+                        yanchor='bottom',
+                        y=1,
+                        xanchor='right',
+                        x=1
+                    ))
 
 
     ex1 = list(ex.loc[selected_food1])
