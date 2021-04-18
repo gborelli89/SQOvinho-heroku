@@ -17,24 +17,22 @@ wi = pd.read_csv('https://raw.githubusercontent.com/gborelli89/SQOvinho-heroku/m
 
 # Nomes dos alimentos
 foodnames1 = list(d.columns)
-foodnames2 = foodnames1.copy()
-foodnames2.insert(0, 'Nenhum')
+#foodnames2 = foodnames1.copy()
+#foodnames2.insert(0, 'Nenhum')
 
 # Encontrando valores superior e inferior mais próximos
 def findclose(s, value):
     maxval = s.Intensidade[s.Intensidade >= value].min()
     minval = s.Intensidade[s.Intensidade <= value].max()
-
     a = s.index[s.Intensidade == minval]
     b = s.index[s.Intensidade == maxval]
-
     return a.tolist() + b.tolist()
 
 # Encontrando sugestão de harmonização
 def findharm(df,wine_int):
     id = [x[0] for x in enumerate(df) if x[1] > 0]
     r = wine_int.iloc[id]
-    range_values = np.linspace(min(r.Intensidade), max(r.Intensidade), 5).tolist()
+    range_values = np.linspace(min(r.Intensidade), max(r.Intensidade), 3).tolist()
     res = [findclose(r,i) for i in range_values]
     return res
 
@@ -66,7 +64,7 @@ app.layout = html.Div([
     ),
 
     html.Div([
-        html.H3('Classe principal'),
+        html.H3('Alimento principal'),
         dcc.Dropdown(
             id = 'food1',
             options = [{'label':i, 'value':i} for i in foodnames1],
@@ -74,18 +72,21 @@ app.layout = html.Div([
             clearable=False,
             searchable=False
         ),
-        html.H4('Intensidade dentro da classe selecionada'),
+        html.H4('Qual a intensidade do alimento?'),
+        html.P("Exemplo com a seleção de peixes:"),
+        html.Li("Tilápia, truta - Baixa"),
+        html.Li("Filhote, cação - Média"),
+        html.Li("Salmão, atum - Alta"),
+        html.Br(),
         dcc.Slider(
             id = 'weight1',
             min = 0,
-            max = 4,
+            max = 2,
             step = None,
             marks={
-                0:'1',
-                1:'2',
-                2:'3',
-                3:'4',
-                4:'5'
+                0:'Baixa',
+                1:'Média',
+                2:'Alta'
             },
             value = 0
         ),
