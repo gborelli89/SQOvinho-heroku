@@ -72,6 +72,7 @@ app.layout = html.Div([
             clearable=False,
             searchable=False
         ),
+        html.P(id = 'ex-food1'),
         html.H4('Qual a intensidade do alimento?'),
         html.P("Exemplo com a seleção de peixes:"),
         html.Li("Tilápia, truta - Baixa"),
@@ -90,7 +91,6 @@ app.layout = html.Div([
             },
             value = 0
         ),
-        html.P(id = 'ex-food1'),
 
     ], style = {'width':'100%'}#, 'display':'inline-block'} 
     ),
